@@ -7,7 +7,6 @@ from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from drive_control_interfaces import DriveData
 
-sys_check_toggle = False
 
 class DriveController(Node):
     def __init__(self):
@@ -17,15 +16,17 @@ class DriveController(Node):
         self.joystick_subscription = self.create_subscription(Joy,'/joy',self.joystick_callback,10)
 
         # Create a publisher for Drive Commands
-        self.drive_publisher = self.create_publisher(DriveData,'drive_commands',10)
+        self.drive_publisher = self.create_publisher(DriveData,'/drive_commands',10)
 
-        #creating 4 instances for each wheel 
-        FR_pid = drive_pid.VelocityController()
-        BR_pid = drive_pid.VelocityController()
-        BL_pid = drive_pid.VelocityController()   
-        FL_pid = drive_pid.VelocityController()
+        self.sys_check_toggle = False
 
-    def sign(x):
+        # #creating 4 instances for each wheel
+        # self.FR_pid = drive_pid.VelocityController()
+        # self.BR_pid = drive_pid.VelocityController()
+        # self.BL_pid = drive_pid.VelocityController()
+        # self.FL_pid = drive_pid.VelocityController()
+
+    def sign(self, x):
         if x > 0:
             return 1
         elif x < 0:
@@ -44,9 +45,9 @@ class DriveController(Node):
         sys_check_trigger = joy_val.axes[6] #for sys_check
 
         if sys_check_trigger == 1:
-            sys_check_toggle = True
+            self.sys_check_toggle = True
         else:
-            sys_check_toggle = False
+            self.sys_check_toggle = False
 
         v = explicit_logic.VroomVroom()
 
@@ -54,21 +55,22 @@ class DriveController(Node):
         explicit_values = v.smooooth_operatorrrr(left_hor,left_ver)
 
         #getting the angles and  the speeds from the explicit_values variable
-        drive_command.angle = [explicit_values[0]]  
-        drive_command.speed = [explicit_values[1]]
+        drive_command.angle = explicit_values[0]
+        drive_command.speed = explicit_values[1]
 
-        #setting the velocities for each of the 4 wheels
-        FR_pid.set_velocity(explicit_values[1][0])
-        BR_pid.set_velocity(explicit_values[1][1])
-        BL_pid.set_velocity(explicit_values[1][2])
-        FL_pid.set_velocity(explicit_values[1][3])
-        
-        drive_command.pwm = [FR_pid.current_output, BR_pid.current_output, BL_pid.current_output, FL_pid.current_output] #add pwm here from drive_pid.py logic
-        drive_command.direction = [self.sign(explicit_values[1][0]),self.sign(explicit_values[1][1]),self.sign(explicit_values[1][2]),self.sign(explicit_values[1][3])]
-        drive_command.sys_check = sys_check_toggle
+        # #setting the velocities for each of the 4 wheels
+        # self.FR_pid.set_velocity(explicit_values[1][0])
+        # self.BR_pid.set_velocity(explicit_values[1][1])
+        # self.BL_pid.set_velocity(explicit_values[1][2])
+        # self.FL_pid.set_velocity(explicit_values[1][3])
+        #
+        # drive_command.pwm = [self.FR_pid.current_output, self.BR_pid.current_output, self.BL_pid.current_output, self.FL_pid.current_output] #add pwm here from drive_pid.py logic
+        # drive_command.direction = [self.sign(explicit_values[1][0]),self.sign(explicit_values[1][1]),self.sign(explicit_values[1][2]),self.sign(explicit_values[1][3])]
+        drive_command.sys_check = self.sys_check_toggle
 
         self.drive_publisher.publish(drive_command)
-        self.get_logger().info(f'Published drive command - Speed: {list(drive_command.speed)}, Direction: {list(drive_command.direction)}, PWM: {list(drive_command.pwm)}, Angle: {list(drive_command.angle)}, System Check Request: {drive_command.sys_check}')
+        # self.get_logger().info(f'Published drive command - Speed: {list(drive_command.speed)}, Direction: {list(drive_command.direction)}, PWM: {list(drive_command.pwm)}, Angle: {list(drive_command.angle)}, System Check Request: {drive_command.sys_check}')
+        self.get_logger().info(f'Published drive command - Speed: {list(drive_command.speed)}, Angle: {list(drive_command.angle)}, System Check Request: {drive_command.sys_check}')
 
 
 def main(args=None):

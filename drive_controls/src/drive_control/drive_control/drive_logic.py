@@ -19,6 +19,12 @@ class DriveController(Node):
         # Create a publisher for Drive Commands
         self.drive_publisher = self.create_publisher(DriveData,'drive_commands',10)
 
+        #creating 4 instances for each wheel 
+        FR_pid = drive_pid.VelocityController()
+        BR_pid = drive_pid.VelocityController()
+        BL_pid = drive_pid.VelocityController()   
+        FL_pid = drive_pid.VelocityController()
+
     def sign(x):
         if x > 0:
             return 1
@@ -44,12 +50,20 @@ class DriveController(Node):
 
         v = explicit_logic.VroomVroom()
 
-        # Return: Returns 2 lists of angles and velocities respectively. The order of motors is in: Front Right, Back Right, Back Left, Front Right
+        # Return: Returns 2 lists of angles and velocities respectively. The order of motors is in: Front Right, Back Right, Back Left, Front Left
         explicit_values = v.smooooth_operatorrrr(left_hor,left_ver)
 
+        #getting the angles and  the speeds from the explicit_values variable
         drive_command.angle = [explicit_values[0]]  
         drive_command.speed = [explicit_values[1]]
-        drive_command.pwm = [0] #add pwm here from drive_pid.py logic
+
+        #setting the velocities for each of the 4 wheels
+        FR_pid.set_velocity(explicit_values[1][0])
+        BR_pid.set_velocity(explicit_values[1][1])
+        BL_pid.set_velocity(explicit_values[1][2])
+        FL_pid.set_velocity(explicit_values[1][3])
+        
+        drive_command.pwm = [FR_pid.current_output, BR_pid.current_output, BL_pid.current_output, FL_pid.current_output] #add pwm here from drive_pid.py logic
         drive_command.direction = [self.sign(explicit_values[1][0]),self.sign(explicit_values[1][1]),self.sign(explicit_values[1][2]),self.sign(explicit_values[1][3])]
         drive_command.sys_check = sys_check_toggle
 

@@ -1,6 +1,6 @@
 # ROS2 framework of 2026 MRT rover
 
-Do:
+Do (in outermost directory):
 
 > python3 colcon_build.py
 

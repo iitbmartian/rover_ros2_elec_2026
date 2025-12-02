@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'linear_base_start = linear_base_control.linear_base_logic:main'
         ],
     },
 )

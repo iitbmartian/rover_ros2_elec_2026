@@ -20,10 +20,10 @@ class DriveController(Node):
         self.drive_publisher = self.create_publisher(DriveData,'drive_commands',10)
 
         #creating 4 instances for each wheel 
-        self.FR_pid = drive_pid.VelocityController()
-        self.BR_pid = drive_pid.VelocityController()
-        self.BL_pid = drive_pid.VelocityController()   
-        self.FL_pid = drive_pid.VelocityController()
+        self.FR_D_pid = drive_pid.VelocityController()
+        self.BR_D_pid = drive_pid.VelocityController()
+        self.BL_D_pid = drive_pid.VelocityController()   
+        self.FL_D_pid = drive_pid.VelocityController()
 
     def sign(self,x):
         if x > 0:
@@ -50,17 +50,18 @@ class DriveController(Node):
         # Return: Returns 2 lists of angles and velocities respectively. The order of motors is in: Front Right, Back Right, Back Left, Front Left
         explicit_values = v.smooooth_operatorrrr(left_hor,left_ver)
 
-        #getting the angles and  the speeds from the explicit_values variable
-        drive_command.angle = explicit_values[0]  
-        drive_command.speed = explicit_values[1]
-
-        #setting the velocities for each of the 4 wheels
-        self.FR_pid.set_velocity(explicit_values[1][0])
-        self.BR_pid.set_velocity(explicit_values[1][1])
-        self.BL_pid.set_velocity(explicit_values[1][2])
-        self.FL_pid.set_velocity(explicit_values[1][3])
+        # Getting the angles and the speeds from the explicit_values variable
+        drive_command.angle = explicit_values[0] #angle of the explicit rotation motors
+        drive_command.speed = explicit_values[1] #speed of each of the drive motors
+ 
+        # Setting the velocities for each of the 4 drive wheels
+        self.FR_D_pid.set_velocity(explicit_values[1][0])
+        self.BR_D_pid.set_velocity(explicit_values[1][1])
+        self.BL_D_pid.set_velocity(explicit_values[1][2])
+        self.FL_D_pid.set_velocity(explicit_values[1][3])
         
-        drive_command.pwm = [self.FR_pid.current_output, self.BR_pid.current_output, self.BL_pid.current_output, self.FL_pid.current_output] #pwm from pid logic
+        # First 4 are of explicit rotation, last 4 of drive motors, each in same order FR BR BL FL
+        drive_command.pwm = [0,0,0,0,self.FR_D_pid.current_output, self.BR_D_pid.current_output, self.BL_D_pid.current_output, self.FL_D_pid.current_output] #pwm from pid logic
         drive_command.direction = [self.sign(explicit_values[1][0]),self.sign(explicit_values[1][1]),self.sign(explicit_values[1][2]),self.sign(explicit_values[1][3])]
         drive_command.sys_check = sys_check_toggle
 

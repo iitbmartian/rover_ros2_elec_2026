@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14.4)
-project(pos_control_interfaces)
+project(all_interfaces)
 
 if(POLICY CMP0148)
   cmake_policy(SET CMP0148 OLD)
@@ -20,6 +20,9 @@ find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/DriveData.msg"
+  "msg/LinearBaseData.msg"
+  "msg/WristData.msg"
   "action/Trajectory.action"
   DEPENDENCIES std_msgs geometry_msgs
 )

@@ -1,36 +1,10 @@
 # ROS2 framework of 2026 MRT rover
 
-Do (in outermost directory):
+ENSURE THAT YOU SOURCE ONLY THE `mrt_ws` WORKSPACE AND NO OTHER WORKSPACE IS SOURCED.
 
-> python3 colcon_build.py
+Run `colcon build` in `mrt_ws` directory before using.
 
-To colcon build in all packages (all package names must end in "controls")
-
-## Drive Logic
-
-package cmake drive_control_interfaces defines the DriveData message class containing:
-
-*angle of each wheel wrt straight forward reference*
-
-float64[] angle 
-
-*speed of each wheel *
-
-float64[] speed
-
-*pwm (12 bit 0 to 4095) to each motor*
-
-int16[] pwm 
-
-*direction value, +1 if speed > 0, -1 if speed < 0 and =0 if speed = 0*
-
-int8[] direction
-
-*sys_check boolean*
-
-bool sys_check
-
-package py drive_control contains the drive logic, with explicit and pid control logic
+TODO: Fix interfaces, venv dependencies, usage of messages in packages.
 
 ## Foxglove instructions: 
 

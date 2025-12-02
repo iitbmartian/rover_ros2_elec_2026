@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>pos_control_interfaces</name>
+  <name>all_interfaces</name>
   <version>0.0.0</version>
-  <description>MRT 2025: Interfaces for Position Control Pipeline of Robotic Arm</description>
-  <maintainer email="harshitsomani09@gmail.com">harshit</maintainer>
-  <license>Apache License 2.0</license>
+  <description>MRT 2025: Package containing all interfaces for the ROS2 pipeline.</description>
+  <maintainer email="harshitsomani09@gmail.com">omeganebula</maintainer>
+  <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

@@ -1,8 +1,6 @@
 from setuptools import find_packages, setup
-import os
-from glob import glob   
 
-package_name = 'drive_control'
+package_name = 'wrist_control'
 
 setup(
     name=package_name,
@@ -12,7 +10,6 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/drive_control/launch', ['launch/drive_launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -27,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'drive_start = drive_control.drive_logic:main'
+            'wrist_start = wrist_control.wrist_logic:main'
         ],
     },
 )

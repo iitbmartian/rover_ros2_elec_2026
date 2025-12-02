@@ -20,12 +20,12 @@ class DriveController(Node):
         self.drive_publisher = self.create_publisher(DriveData,'drive_commands',10)
 
         #creating 4 instances for each wheel 
-        FR_pid = drive_pid.VelocityController()
-        BR_pid = drive_pid.VelocityController()
-        BL_pid = drive_pid.VelocityController()   
-        FL_pid = drive_pid.VelocityController()
+        self.FR_pid = drive_pid.VelocityController()
+        self.BR_pid = drive_pid.VelocityController()
+        self.BL_pid = drive_pid.VelocityController()   
+        self.FL_pid = drive_pid.VelocityController()
 
-    def sign(x):
+    def sign(self,x):
         if x > 0:
             return 1
         elif x < 0:
@@ -34,7 +34,7 @@ class DriveController(Node):
             return 0
     
     def joystick_callback(self,joy_val):
-        global toggle
+        global sys_check_toggle
         drive_command = DriveData()
 
         # Extract Joystick values
@@ -43,10 +43,7 @@ class DriveController(Node):
 
         sys_check_trigger = joy_val.axes[6] #for sys_check
 
-        if sys_check_trigger == 1:
-            sys_check_toggle = True
-        else:
-            sys_check_toggle = False
+        sys_check_toggle = (sys_check_trigger == 1) #True if 1, False if not
 
         v = explicit_logic.VroomVroom()
 
@@ -54,16 +51,16 @@ class DriveController(Node):
         explicit_values = v.smooooth_operatorrrr(left_hor,left_ver)
 
         #getting the angles and  the speeds from the explicit_values variable
-        drive_command.angle = [explicit_values[0]]  
-        drive_command.speed = [explicit_values[1]]
+        drive_command.angle = explicit_values[0]  
+        drive_command.speed = explicit_values[1]
 
         #setting the velocities for each of the 4 wheels
-        FR_pid.set_velocity(explicit_values[1][0])
-        BR_pid.set_velocity(explicit_values[1][1])
-        BL_pid.set_velocity(explicit_values[1][2])
-        FL_pid.set_velocity(explicit_values[1][3])
+        self.FR_pid.set_velocity(explicit_values[1][0])
+        self.BR_pid.set_velocity(explicit_values[1][1])
+        self.BL_pid.set_velocity(explicit_values[1][2])
+        self.FL_pid.set_velocity(explicit_values[1][3])
         
-        drive_command.pwm = [FR_pid.current_output, BR_pid.current_output, BL_pid.current_output, FL_pid.current_output] #add pwm here from drive_pid.py logic
+        drive_command.pwm = [self.FR_pid.current_output, self.BR_pid.current_output, self.BL_pid.current_output, self.FL_pid.current_output] #pwm from pid logic
         drive_command.direction = [self.sign(explicit_values[1][0]),self.sign(explicit_values[1][1]),self.sign(explicit_values[1][2]),self.sign(explicit_values[1][3])]
         drive_command.sys_check = sys_check_toggle
 

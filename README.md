@@ -4,7 +4,7 @@ ENSURE THAT YOU SOURCE ONLY THE `mrt_ws` WORKSPACE AND NO OTHER WORKSPACE IS SOU
 
 Run `colcon build` in `mrt_ws` directory before using.
 
-TODO: Fix interfaces, venv dependencies, usage of messages in packages.
+TODO: Fix interfaces, venv dependencies, usage of messages in packages, launch files.
 
 ## Foxglove instructions: 
 

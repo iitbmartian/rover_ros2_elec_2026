@@ -1,5 +1,11 @@
 # ROS2 framework of 2026 MRT rover
 
+Do (in outermost directory):
+
+> python3 colcon_build.py
+
+To colcon build in all packages (all package names must end in "controls")
+
 ## Drive Logic
 
 package cmake drive_control_interfaces defines the DriveData message class containing:

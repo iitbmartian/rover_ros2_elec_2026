@@ -4,4 +4,6 @@
 
 int8[] direction
 
+bool enable
+
 uint16[] pulse_interval

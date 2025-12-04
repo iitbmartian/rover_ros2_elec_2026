@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from wrist_control_interfaces import WristData
+from all_interfaces.msg import WristData
 
 class WristController(Node):
     def __init__(self):
@@ -26,14 +26,19 @@ class WristController(Node):
 
         wrist_commands.pulse_interval = [800,800]
 
+        wrist_commands.enable = True
+
         if(y == 1):
             wrist_commands.direction = [1,1]
         elif(a == 1):
             wrist_commands.direction = [-1,-1]
         elif(x == 1):
             wrist_commands.direction = [-1,1]
-        else:
+        elif(b == 1):
             wrist_commands.direction = [1,-1]
+        else:
+            wrist_commands.direction = [1,1]
+            wrist_commands.enable = False
 
 def main(args=None):
     rclpy.init(args=args)

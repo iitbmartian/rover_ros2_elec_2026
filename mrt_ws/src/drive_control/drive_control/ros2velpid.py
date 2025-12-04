@@ -66,6 +66,7 @@ class MotorController(Node):
             bytesize=serial.EIGHTBITS,
             timeout=100  # Timeout in seconds for read operations
         )
+        
         # Timeout parameters
         self.last_cmd_time = self.get_clock().now()
         self.timeout_duration = 0.5  # Stop if no message received for 0.5 seconds

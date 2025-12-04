@@ -3,7 +3,7 @@
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from linear_base_control_interfaces import LinearBaseData
+from all_interfaces.msg import LinearBaseData
 
 pwm_deadzone = 500 #if pwm calculated < 500 then ignore
 
@@ -15,7 +15,7 @@ class LinearBaseController(Node):
         self.joystick_subscription = self.create_subscription(Joy,'/joy',self.joystick_callback,10)
 
         # Create a publisher for Drive Commands
-        self.linear_base_publisher = self.create_publisher(LinearBaseData,'linear_base_commands',10)
+        self.linear_base_publisher = self.create_publisher(LinearBaseData,'/linear_base_commands',10)
     
     def get_pwm(self,x):
         global pwm_deadzone

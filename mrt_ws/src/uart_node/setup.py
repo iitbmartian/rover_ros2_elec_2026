@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'wrist_control'
+package_name = 'uart_node'
 
 setup(
     name=package_name,
@@ -24,7 +24,6 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'wrist_start = wrist_control.wrist_control:main'
         ],
     },
 )

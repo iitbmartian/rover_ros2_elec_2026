@@ -5,7 +5,7 @@ import explicit_logic
 import drive_pid
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
-from drive_control_interfaces import DriveData
+from all_interfaces.msg import DriveData
 
 
 class DriveController(Node):

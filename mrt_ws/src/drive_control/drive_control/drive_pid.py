@@ -76,7 +76,7 @@ class VelocityController:
         self.current_output += self.acc_coef * pid_val * (time.perf_counter() - self.error_history[-2][0])
 
     def publish(self):
-        # publish self.current_output
+        # publish self.current_output 
         pass
 
     def set_velocity(self, v: float):

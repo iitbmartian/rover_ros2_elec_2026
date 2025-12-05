@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'uart_start = uart_node.uart_nodea:main'
         ],
     },
 )

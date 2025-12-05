@@ -7,6 +7,10 @@ from all_interfaces.msg import DriveData, LinearBaseData, WristData, TelemetryDa
 import serial
 import struct
 
+NUM_ENCODERS = 6
+NUM_QUAD = 5 + 1 # 5 from timer, 1 through GPIO
+NUM_ACS = 11
+
 #UART SENDING FRAME:
 #[11 pwm values 12 bit (2 byte with top MSB as direction) -> so 0000xxxx xxxxxxxxx and 1000xxxx xxxxxxxx are different directions, 12 last bits as pwm]
 #[1 byte as command for wrist steppers]
@@ -27,6 +31,9 @@ class UARTBridge(Node):
 
         # Timer: to send UART frame -> 10 khz for 0.001 callback
         self.send_timer = self.create_timer(0.001, self.send_uart)
+
+        # Timer: read incoming UART frame
+        self.read_timer = self.create_timer(0.01, self.read_uart)
         
         # Telemetry Publisher
         self.telemetry_publisher = self.create_publisher(TelemetryData, '/telemetry', 10)
@@ -77,6 +84,71 @@ class UARTBridge(Node):
         fmt = '>11HB' #tells uart payload frame type, 11 H (unsigned 16 bit) + 1 B (unsigned 8 bit)
         payload = struct.pack(fmt,*self.motor_values,self.wrist_command)
         self.serial.write(payload)
+
+    def read_uart(self):
+
+        telemetry_data = TelemetryData()
+
+        total_len = (2 * NUM_ENCODERS) + (12 * NUM_QUAD) + (2 * NUM_ACS)
+        try:
+            data = self.serial.read(total_len)
+
+            if len(data) != total_len:
+                return   # incomplete frame
+            
+            i = 0
+            angle = []
+            for _ in range(NUM_ENCODERS):
+                high_byte = data[i]
+                low_byte = data[i+1]
+                value = float((high_byte << 8) | low_byte)/100
+                angle.append(value)
+                i += 2
+            
+            telemetry_data.angle = angle
+
+            position = []
+            speed = []
+            acceleration = []
+
+            for _ in range(NUM_QUAD):
+                position_values = data[i:i+4] 
+                position_value = (position_values[0] | position_values[1] << 8 | position_values[2] << 16 | position_values[3] << 24)
+                position.append(position_value)
+                i += 4
+            
+            for _ in range(NUM_QUAD):
+                speed_values = data[i:i+4] 
+                speed_value = (speed_values[0] | speed_values[1] << 8 | speed_values[2] << 16 | speed_values[3] << 24)
+                speed.append(speed_value)
+                i += 4
+            
+            for _ in range(NUM_QUAD):
+                acceleration_values = data[i:i+4]
+                acceleration_value = (acceleration_values[0] | acceleration_values[1] << 8 | acceleration_values[2] << 16 | acceleration_values[3] << 24)
+                acceleration.append(acceleration_value)
+                i += 4
+
+            telemetry_data.position = position
+            telemetry_data.speed = speed
+            telemetry_data.acceleration = acceleration
+            
+            current = []
+
+            for _ in range(NUM_ACS):
+                high_byte = data[i]
+                low_byte = data[i+1]
+                value = float((high_byte << 8) | low_byte)*0.01208791208 - 25 #scaling factor to convert from ADC 0-4095 to current value
+                current.append(value)
+                i += 2
+            
+            telemetry_data.current = current
+
+            self.telemetry_publisher.publish(telemetry_data)
+
+
+        except Exception:
+            pass
 
 def main(args=None):
     rclpy.init(args=args)

@@ -1,10 +1,13 @@
 #Currents
 float64[] current 
 
-#Angle
+#Angle of explicit
 float64[] angle 
 
-#Speed
+#Position of drive
+int64[] position
+
+#Speed of drive
 float64[] speed 
 
 #Acceleration

@@ -80,7 +80,7 @@ class MotorController(Node):
 
     def send_uart_data(self, dir_arr, pwm_arr):
         outstring = b""
-        for i in range(self.self.n_motors):
+        for i in range(self.n_motors):
             outstring += dir_arr[i].to_bytes(1, byteorder='little')
             outstring += min(int(pwm_arr[i]), 255).to_bytes(1, byteorder='little')
         # add current and target height for the z axis stepperrint(f'Sending serial: {outstring}')

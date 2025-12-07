@@ -60,16 +60,18 @@ crop = b""
 def blop():
     global crop
     t1 = time.perf_counter()
-    while time.perf_counter() - t1 < 1:
+    while time.perf_counter() - t1 < 0.1:
         crop += tester.get_uart_data()
         time.sleep(0.01)
 
 try:
+    tester.ser.read(tester.ser.in_waiting)
+
+    powm = 0
     while True:
-        tester.send_uart_data([1] * 2, [50] * 2)
+        tester.send_uart_data([0] * 2, [powm, 0] * 2)
         blop()
-        tester.send_uart_data([0] * 2, [50] * 2)
-        blop()
+        powm += 1
 
         with open("testicle_readings.txt", 'w') as f:
             f.write(crop.hex())

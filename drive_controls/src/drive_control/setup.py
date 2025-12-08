@@ -27,7 +27,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'drive_start = drive_control.drive_logic:main'
+            'drive_start = drive_control.drive_logic:main',
+            'uart_node = drive_control.uart_node:main',
         ],
     },
 )

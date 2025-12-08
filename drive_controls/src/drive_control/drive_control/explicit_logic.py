@@ -3,11 +3,12 @@ from typing import List
 
 
 class VroomVroom:
-    def __init__(self):
-        self.a = 0.5
-        self.b = 0.2
-        self.speed_scalar = 1
-        self.deadzone = 0.1
+    def __init__(self, half_width=0.5, half_length=0.2, speed_scalar=255, r_scalar=1, deadzone=0.1):
+        self.a = half_width
+        self.b = half_length
+        self.speed_scalar = speed_scalar
+        self.r_scalar = r_scalar
+        self.deadzone = deadzone
 
     def smooooth_operatorrrr(self, joy_x: float, joy_y: float) -> List[List[float]]:
         """
@@ -34,7 +35,7 @@ class VroomVroom:
 
         rinv = math.tan(joy_x * (math.pi / 2 - 0.01))
 
-        R = 1 / rinv
+        R = self.r_scalar / rinv
 
         if abs(joy_y) <= self.deadzone:
             w = 0
@@ -73,8 +74,3 @@ class VroomVroom:
 
 
 v = VroomVroom()
-
-print(v.smooooth_operatorrrr(0, 0.9))
-print(v.smooooth_operatorrrr(0.5, 0.9))
-print(v.smooooth_operatorrrr(0.9, 0))
-print(v.smooooth_operatorrrr(-0.6, 0.9))

@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 
 class PositionController:
-    def __init__(self, publisher=None, cap=255, Kp=100000, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
+    def __init__(self, publisher=None, cap=255, Kp=30, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
         """
         :param publisher: Publisher function
         :param cap: The cap to the output
@@ -90,7 +90,7 @@ class PositionController:
         self.desired_position = p
         return self.tick()
 
-    def add_position(self, pos: int | float):
+    def add_position_feedback(self, pos: int | float):
         self.real_position = pos
         return self.tick()
 

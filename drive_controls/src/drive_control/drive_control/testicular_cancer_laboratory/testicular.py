@@ -68,7 +68,7 @@ try:
     tester.ser.read(tester.ser.in_waiting)
 
     powm = 0
-    while True:
+    while powm < 256:
         tester.send_uart_data([0] * 2, [powm, 0] * 2)
         blop()
         powm += 1
@@ -76,6 +76,8 @@ try:
         with open("testicle_readings.txt", 'w') as f:
             f.write(crop.hex())
 except:
+    pass
+finally:
     tester.send_uart_data([0] * 2, [0] * 2)
     tester.ser.close()
     

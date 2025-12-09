@@ -23,7 +23,9 @@ class UARTBridge(Node):
         super().__init__('uart_bridge')
 
         # UART object
-        self.serial = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.01, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
+        self.serial = serial.Serial('/dev/ttyUSB0', 115200, timeout=0.08, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
+
+        #self.recv_buffer = bytearray()
 
         # Subscribe to nodes
         self.create_subscription(DriveData,'/drive_commands',self.drive_callback,10)
@@ -42,6 +44,7 @@ class UARTBridge(Node):
 
         self.motor_values = [0]*11
         self.wrist_command = 4 #do nothing 
+        self.serial.reset_input_buffer()
     
     def add_direction(self,pwm_vals,directions):
         result = []
@@ -91,102 +94,101 @@ class UARTBridge(Node):
 
         telemetry_data = TelemetryData()
 
-
         total_len = (2 * NUM_ENCODERS) + (12 * NUM_QUAD) + (2 * NUM_ACS)
-        try:
 
-            bytes_to_read = self.serial.inWaiting()
+        bytes_to_read = self.serial.in_waiting
 
-            data = self.serial.read(bytes_to_read)
+        if(bytes_to_read == 0):
+            return
 
-            last_nl = data.rfind(b'\n')
+        data = self.serial.read(bytes_to_read)
 
-            if(last_nl == -1):
-                print("Newline character not found")
-                return
+        last_nl = data.rfind(b'\n')
 
-            print(last_nl)
-
-            data = data[last_nl - total_len:last_nl] #take only that slice frame
-
+        if(last_nl == -1):
+            print("Newline character not found")
             self.serial.reset_input_buffer()
+            return
 
-            print("Raw frame: ", data)
-            print("Length of frame: ", len(data))
+        print(last_nl)
 
-            if len(data) != total_len:
-                return   # incomplete frame
-
-            print('Reading uart frame')
-            i = 0
-            
-
-            position = []
-            speed = []
-            acceleration = []
-
-            for _ in range(NUM_QUAD):
-                position_values = data[i:i+4] 
-                position_value = (position_values[3] | position_values[2] << 8 | position_values[1] << 16 | position_values[0] << 24)
-                position.append(position_value)
-                print(f"Position {_ + 1}: {position_value}")
-                i += 12
-            
-            i = 4
-            
-            for _ in range(NUM_QUAD):
-                speed_values = data[i:i+4] 
-                speed_value = (speed_values[3] | speed_values[2] << 8 | speed_values[1] << 16 | speed_values[0] << 24)
-                speed.append(speed_value)
-                print(f"Speed {_ + 1}: {speed_value}")
-                i += 12
-            
-            i = 8
-            
-            for _ in range(NUM_QUAD):
-                acceleration_values = data[i:i+4]
-                acceleration_value = (acceleration_values[3] | acceleration_values[2] << 8 | acceleration_values[1] << 16 | acceleration_values[0] << 24)
-                acceleration.append(acceleration_value)
-                print(f"Acceleration {_ + 1}: {acceleration_value}")
-                i += 12
-
-            
-            angle = []
-
-            i = 12 * (NUM_QUAD) # force define the offset 
-
-            for _ in range(NUM_ENCODERS):
-                high_byte = np.uint16(data[i])
-                low_byte = np.uint16(data[i+1])
-                value = float((high_byte << 8) | low_byte)/100.0
-                print(f"Angle {_ + 1}: {value}")
-                angle.append(value)
-                i += 2
-
-            current = []
-
-            for _ in range(NUM_ACS):
-                high_byte = np.uint16(data[i])
-                low_byte = np.uint16(data[i+1])
-                value = float((high_byte << 8) | low_byte)*0.01208791208 - 25 #scaling factor to convert from ADC 0-4095 to current value
-                print(f"Current {_ + 1}: {value}")
-                current.append(value)
-                i += 2
-            
-            telemetry_data.angle = angle
-            telemetry_data.current = current
-
-            telemetry_data.position = position
-            telemetry_data.speed = speed
-            telemetry_data.acceleration = acceleration
-
-            print("Publishing telemetry data")
-
-            self.telemetry_publisher.publish(telemetry_data)
+        data = data[last_nl - total_len:last_nl] #take only that slice frame
 
 
-        except Exception:
-            pass
+        print("Raw frame: ", data)
+        print("Length of frame: ", len(data))
+
+        if len(data) != total_len:
+            return   # incomplete frame
+
+        print('Reading uart frame')
+
+        i = 0
+
+        position = []
+        speed = []
+        acceleration = []
+
+        for _ in range(NUM_QUAD):
+            position_values = data[i:i+4] 
+            position_value = (position_values[3] | position_values[2] << 8 | position_values[1] << 16 | position_values[0] << 24)
+            position.append(int(position_value))
+            print(f"Position {_ + 1}: {position_value}")
+            i += 12
+        
+        i = 4
+        
+        for _ in range(NUM_QUAD):
+            speed_values = data[i:i+4] 
+            speed_value = (speed_values[3] | speed_values[2] << 8 | speed_values[1] << 16 | speed_values[0] << 24)
+            speed.append(int(speed_value))
+            print(f"Speed {_ + 1}: {speed_value}")
+            i += 12
+        
+        i = 8
+        
+        for _ in range(NUM_QUAD):
+            acceleration_values = data[i:i+4]
+            acceleration_value = (acceleration_values[3] | acceleration_values[2] << 8 | acceleration_values[1] << 16 | acceleration_values[0] << 24)
+            acceleration.append(int(acceleration_value))
+            print(f"Acceleration {_ + 1}: {acceleration_value}")
+            i += 12
+
+        
+        angle = []
+
+        i = 12 * (NUM_QUAD) # force define the offset 
+
+        for _ in range(NUM_ENCODERS):
+            high_byte = np.uint16(data[i])
+            low_byte = np.uint16(data[i+1])
+            value = float((high_byte << 8) | low_byte)/100.0
+            print(f"Angle {_ + 1}: {value}")
+            angle.append(value)
+            i += 2
+
+        current = []
+
+        for _ in range(NUM_ACS):
+            high_byte = np.uint16(data[i])
+            low_byte = np.uint16(data[i+1])
+            value = float((high_byte << 8) | low_byte)*0.01208791208 - 25 #scaling factor to convert from ADC 0-4095 to current value
+            print(f"Current {_ + 1}: {value}")
+            current.append(value)
+            i += 2
+        
+        telemetry_data.angle = angle
+        telemetry_data.current = current
+
+        telemetry_data.position = position
+        telemetry_data.speed = speed
+        telemetry_data.acceleration = acceleration
+
+        print("Publishing telemetry data")
+        self.serial.reset_input_buffer()
+
+        self.telemetry_publisher.publish(telemetry_data)
+
 
 def main(args=None):
     rclpy.init(args=args)

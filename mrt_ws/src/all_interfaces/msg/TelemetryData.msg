@@ -8,8 +8,8 @@ float64[] angle
 int64[] position
 
 #Speed of drive
-float64[] speed 
+int32[] speed 
 
 #Acceleration
-float64[] acceleration 
+int32[] acceleration 
 

@@ -99,15 +99,7 @@ class UARTBridge(Node):
             
             print('Reading uart frame')
             i = 0
-            angle = []
-            for _ in range(NUM_ENCODERS):
-                high_byte = data[i]
-                low_byte = data[i+1]
-                value = float((high_byte << 8) | low_byte)/100
-                angle.append(value)
-                i += 2
             
-            telemetry_data.angle = angle
 
             position = []
             speed = []
@@ -134,6 +126,17 @@ class UARTBridge(Node):
             telemetry_data.position = position
             telemetry_data.speed = speed
             telemetry_data.acceleration = acceleration
+            
+            angle = []
+
+            for _ in range(NUM_ENCODERS):
+                high_byte = data[i]
+                low_byte = data[i+1]
+                value = float((high_byte << 8) | low_byte)/100
+                angle.append(value)
+                i += 2
+
+            telemetry_data.angle = angle
             
             current = []
 

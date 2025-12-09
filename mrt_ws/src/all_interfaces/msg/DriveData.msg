@@ -10,5 +10,3 @@ int16[] pwm
 #direction (REQUIRED)
 int8[] direction
 
-#sys_check boolean
-bool sys_check

@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import UInt16, Int8, String
 from all_interfaces.msg import DriveData, LinearBaseData, WristData, TelemetryData
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 import serial
 import struct
 
@@ -29,14 +30,14 @@ class UARTBridge(Node):
         self.create_subscription(WristData,'/wrist_commands',self.wrist_callback,10)
 
 
-        # Timer: to send UART frame -> 10 khz for 0.001 callback
-        self.send_timer = self.create_timer(0.001, self.send_uart)
+        # Timer: to send UART frame -> 100 hz for 0.01 callback
+        #self.send_timer = self.create_timer(0.01, self.send_uart)
 
         # Timer: read incoming UART frame
         self.read_timer = self.create_timer(0.01, self.read_uart)
         
         # Telemetry Publisher
-        self.telemetry_publisher = self.create_publisher(TelemetryData, '/telemetry', 10)
+        self.telemetry_publisher = self.create_publisher(TelemetryData, '/telemetry',QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT))
 
         self.motor_values = [0]*11
         self.wrist_command = 4 #do nothing 
@@ -96,6 +97,7 @@ class UARTBridge(Node):
             if len(data) != total_len:
                 return   # incomplete frame
             
+            print('Reading uart frame')
             i = 0
             angle = []
             for _ in range(NUM_ENCODERS):
@@ -143,6 +145,8 @@ class UARTBridge(Node):
                 i += 2
             
             telemetry_data.current = current
+
+            print("Publishing telemetry data")
 
             self.telemetry_publisher.publish(telemetry_data)
 

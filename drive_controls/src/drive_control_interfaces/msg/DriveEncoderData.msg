@@ -1,1 +1,0 @@
-float64[] magnetic_data

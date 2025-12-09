@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 
 class PositionController:
-    def __init__(self, publisher=None, cap=255, Kp=30, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
+    def __init__(self, publisher=None, cap=255, minimum=50, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
         """
         :param publisher: Publisher function
         :param cap: The cap to the output
@@ -15,6 +15,7 @@ class PositionController:
         """
         self.publisher = publisher
         self.cap = cap
+        self.minimum = minimum
         self.Kp = Kp
         self.Ki = Ki
         self.Kd = Kd
@@ -81,6 +82,9 @@ class PositionController:
         if self.current_output < -self.cap:
             self.current_output = -self.cap
 
+        if -self.minimum <= self.current_output <= self.minimum:
+            self.current_output = 0
+
     def publish(self):
         if self.publisher is not None:
             self.publisher(self.current_output)
@@ -93,6 +97,14 @@ class PositionController:
     def add_position_feedback(self, pos: int | float):
         self.real_position = pos
         return self.tick()
+
+if __name__ == "__main__":
+    p = PositionController()
+    p.set_position(500)
+    p.add_position_feedback(492)
+    print(p.current_output)
+    p.add_position_feedback(495)
+    print(p.current_output)
 
 class VelocityController:
     def __init__(self, publisher=None, cap=255, v_time=0.1, Kp=100000, Ki=0, Kd=0, I_time=0.5, D_time=0.01,

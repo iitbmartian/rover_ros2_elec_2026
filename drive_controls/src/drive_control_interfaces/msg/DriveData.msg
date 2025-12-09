@@ -1,2 +1,2 @@
-int64[] dir_arr
-int64[] pwm_arr
+int64[] pwm
+int64[] direction

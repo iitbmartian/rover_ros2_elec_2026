@@ -30,13 +30,19 @@ class DriveController(Node):
         self.BL_pid = drive_pid.PositionController()
         self.FL_pid = drive_pid.PositionController()
 
-        # TODO
-        # self.FR_mag_offset = 0
-        # self.BR_mag_offset = 0
-        # self.BL_mag_offset = 0
-        # self.FL_mag_offset = 0
+        self.FR_vpid = drive_pid.VelocityController()
+        self.BR_vpid = drive_pid.VelocityController()
+        self.BL_vpid = drive_pid.VelocityController()
+        self.FL_vpid = drive_pid.VelocityController()
+
+        self.FR_mag_offset = 158
+        self.BR_mag_offset = 0
+        self.BL_mag_offset = 0
+        self.FL_mag_offset = 0
 
         self.pids = [self.FR_pid, self.BR_pid, self.BL_pid, self.FL_pid]
+        self.vpids = [self.FR_vpid, self.BR_vpid, self.BL_vpid, self.FL_vpid]
+        self.mag_offsets = [self.FR_mag_offset, self.BR_mag_offset, self.BL_mag_offset, self.FL_mag_offset]
 
         self.velocities = [0] * 4
 
@@ -71,25 +77,30 @@ class DriveController(Node):
 
         # Return: Returns 2 lists of angles and velocities respectively. The order of motors is in: Front Right, Back Right, Back Left, Front Left
         explicit_values = self.vroomer.smooooth_operatorrrr(left_hor, left_ver)
+        print(f"Calculated explicit values: {explicit_values}")
 
         # #setting the angles for each of the 4 wheels
-        # for i in range(4):
-        #     self.pids[i].set_position(explicit_values[0][i])
-        self.FR_pid.set_position(explicit_values[0][0])
-        self.BR_pid.set_position(explicit_values[0][1])
-        self.BL_pid.set_position(explicit_values[0][2])
-        self.FL_pid.set_position(explicit_values[0][3])
+        for i in range(4):
+            self.pids[i].set_position(explicit_values[0][i])
+            self.vpids[i].set_velocity(explicit_values[1][i])
+        # self.FR_pid.set_position(explicit_values[0][0])
+        # self.BR_pid.set_position(explicit_values[0][1])
+        # self.BL_pid.set_position(explicit_values[0][2])
+        # self.FL_pid.set_position(explicit_values[0][3])
 
-        print(f"desired angle: {explicit_values[0][0] + 230}")
+        print(f"desired angle: {explicit_values[0][0] + self.FR_mag_offset}")
+        print(f"desired velocity: {explicit_values[1][0]}")
 
-        self.velocities = explicit_values[1]
+        # self.velocities = explicit_values[1]
 
         self.send()
 
     def encoder_callback(self, telemetry_data):
         enc_data = telemetry_data.angles
-        for i in range(4):
-            self.pids[i].add_position_feedback(enc_data[0] - 230)
+        vel_data = telemetry_data.speed
+        for i in range(1):
+            self.pids[i].add_position_feedback(enc_data[i] - self.mag_offsets[i])
+            self.vpids[i].add_velocity_feedback(vel_data[i])
 
         self.send()
 
@@ -97,7 +108,7 @@ class DriveController(Node):
         drive_data = DriveData()
         full_arr = []
         for i in range(1):
-            full_arr.append(self.velocities[i])
+            full_arr.append(self.vpids[i].current_output)
             full_arr.append(self.pids[i].current_output)
 
         print(full_arr)
@@ -119,8 +130,8 @@ def main(args=None):
         rclpy.spin(drive_control)
     except KeyboardInterrupt:
         print("Shutting down due to KeyboardInterrupt")
-    except Exception as e:
-        print(f"Exception {e}")
+    # except Exception as e:
+        # print(f"Exception {e}")
     finally:
         drive_control.destroy_node()
         rclpy.shutdown()

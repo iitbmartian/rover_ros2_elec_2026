@@ -107,7 +107,7 @@ if __name__ == "__main__":
     print(p.current_output)
 
 class VelocityController:
-    def __init__(self, publisher=None, cap=255, v_time=0.1, Kp=100000, Ki=0, Kd=0, I_time=0.5, D_time=0.01,
+    def __init__(self, publisher=None, cap=255, v_time=0.1, Kp=5.0, Ki=0, Kd=0, I_time=0.5, D_time=0.01,
                  acc_coef=1.0):
         """
         :param publisher: Publisher function
@@ -199,18 +199,7 @@ class VelocityController:
     def set_velocity(self, v: float):
         self.desired_velocity = v
         return self.tick()
-
-    def add_position(self, pos: int | float):
-        self.position_history.append((time.perf_counter(), pos))
-        if len(self.position_history) > 1_000_000:
-            self.position_history = self.position_history[-10_000:]
-        self.update_real_velocity()
+    
+    def add_velocity_feedback(self, vel: float):
+        self.real_velocity = vel
         return self.tick()
-
-    def update_real_velocity(self):
-        other_t = time.perf_counter()
-        other_p = self.position_history[-1][1]
-        for other_t, other_p in self.position_history[-2::-1]:
-            if (time.perf_counter() - other_t) > self.v_time:
-                break
-        self.real_velocity = (self.position_history[-1][1] - other_p) / (time.perf_counter() - other_t)

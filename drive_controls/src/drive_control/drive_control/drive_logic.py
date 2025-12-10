@@ -25,10 +25,10 @@ class DriveController(Node):
         self.vroomer = explicit_logic.VroomVroom()
 
         # creating 4 instances for each wheel
-        self.FR_pid = drive_pid.PositionController()
-        self.BR_pid = drive_pid.PositionController()
-        self.BL_pid = drive_pid.PositionController()
-        self.FL_pid = drive_pid.PositionController()
+        self.FR_ppid = drive_pid.PositionController()
+        self.BR_ppid = drive_pid.PositionController()
+        self.BL_ppid = drive_pid.PositionController()
+        self.FL_ppid = drive_pid.PositionController()
 
         self.FR_vpid = drive_pid.VelocityController()
         self.BR_vpid = drive_pid.VelocityController()
@@ -40,7 +40,7 @@ class DriveController(Node):
         self.BL_mag_offset = 0
         self.FL_mag_offset = 0
 
-        self.pids = [self.FR_pid, self.BR_pid, self.BL_pid, self.FL_pid]
+        self.ppids = [self.FR_ppid, self.BR_ppid, self.BL_ppid, self.FL_ppid]
         self.vpids = [self.FR_vpid, self.BR_vpid, self.BL_vpid, self.FL_vpid]
         self.mag_offsets = [self.FR_mag_offset, self.BR_mag_offset, self.BL_mag_offset, self.FL_mag_offset]
 
@@ -87,12 +87,8 @@ class DriveController(Node):
 
         # #setting the angles for each of the 4 wheels
         for i in range(4):
-            self.pids[i].set_position(explicit_values[0][i])
+            self.ppids[i].set_position(explicit_values[0][i])
             self.vpids[i].set_velocity(explicit_values[1][i])
-        # self.FR_pid.set_position(explicit_values[0][0])
-        # self.BR_pid.set_position(explicit_values[0][1])
-        # self.BL_pid.set_position(explicit_values[0][2])
-        # self.FL_pid.set_position(explicit_values[0][3])
 
         print(f"desired angle: {explicit_values[0][0] + self.FR_mag_offset}")
         print(f"desired velocity: {explicit_values[1][0]}")
@@ -101,12 +97,24 @@ class DriveController(Node):
 
         self.send()
 
+    def format_magnetic_angle(self, angle, motor_index):
+        real_angle = angle - self.mag_offsets[motor_index]
+
+        while real_angle > 180:
+            real_angle -= 360
+
+        while real_angle < -180:
+            real_angle += 360
+
+        return real_angle
+
     def encoder_callback(self, telemetry_data):
         enc_data = telemetry_data.angles
         vel_data = telemetry_data.speed
         actual_vel_history.append((self.get_clock().now(), vel_data[0]))
         for i in range(1):
-            self.pids[i].add_position_feedback(enc_data[i] - self.mag_offsets[i])
+            magnetic_angle = self.format_magnetic_angle(enc_data[i], i)
+            self.ppids[i].add_position_feedback(magnetic_angle)
             self.vpids[i].add_velocity_feedback(vel_data[i])
 
         self.send()
@@ -116,7 +124,7 @@ class DriveController(Node):
         full_arr = []
         for i in range(1):
             full_arr.append(self.vpids[i].current_output)
-            full_arr.append(self.pids[i].current_output)
+            full_arr.append(self.ppids[i].current_output)
 
         print(full_arr)
 

@@ -26,25 +26,23 @@ class DriveController(Node):
 
         # creating 4 instances for each wheel
         self.FR_ppid = drive_pid.PositionController()
-        self.BR_ppid = drive_pid.PositionController()
-        self.BL_ppid = drive_pid.PositionController()
         self.FL_ppid = drive_pid.PositionController()
+        self.BL_ppid = drive_pid.PositionController()
+        self.BR_ppid = drive_pid.PositionController()
 
         self.FR_vpid = drive_pid.VelocityController()
-        self.BR_vpid = drive_pid.VelocityController()
-        self.BL_vpid = drive_pid.VelocityController()
         self.FL_vpid = drive_pid.VelocityController()
+        self.BL_vpid = drive_pid.VelocityController()
+        self.BR_vpid = drive_pid.VelocityController()
 
         self.FR_mag_offset = 0
-        self.BR_mag_offset = 0
-        self.BL_mag_offset = 0
         self.FL_mag_offset = 0
+        self.BL_mag_offset = 0
+        self.BR_mag_offset = 0
 
-        self.ppids = [self.FR_ppid, self.BR_ppid, self.BL_ppid, self.FL_ppid]
-        self.vpids = [self.FR_vpid, self.BR_vpid, self.BL_vpid, self.FL_vpid]
-        self.mag_offsets = [self.FR_mag_offset, self.BR_mag_offset, self.BL_mag_offset, self.FL_mag_offset]
-
-        self.motor_order_mapping = [0, 3, 2, 1]
+        self.ppids = [self.FR_ppid, self.FL_ppid, self.BL_ppid, self.BR_ppid]
+        self.vpids = [self.FR_vpid, self.FL_vpid, self.BL_vpid, self.BR_vpid]
+        self.mag_offsets = [self.FR_mag_offset, self.FL_mag_offset, self.BL_mag_offset, self.BR_mag_offset]
 
         self.velocities = [0] * 4
         global actual_vel_history, target_vel_history
@@ -125,9 +123,8 @@ class DriveController(Node):
         drive_data = DriveData()
         full_arr = []
         for i in range(1):
-            motor_idx = self.motor_order_mapping[i]
-            full_arr.append(self.vpids[motor_idx].current_output)
-            full_arr.append(self.ppids[motor_idx].current_output)
+            full_arr.append(self.vpids[i].current_output)
+            full_arr.append(self.ppids[i].current_output)
 
         print(full_arr)
 

@@ -16,7 +16,7 @@ class VroomVroom:
         Smooth Operator mode: The rover moves on a circular path with Radius of curvature and velocity according to joystick input
         :param joy_x: X axis of Joystick (from -1 to 1)
         :param joy_y: Y axis of Joystick (from -1 to 1)
-        :return: Returns 2 lists of angles and velocities respectively. The order of motors is in: Front Right, Back Right, Back Left, Front Right
+        :return: Returns 2 lists of angles and velocities respectively. The order of motors is in: Front Right, Front Left, Back Left, Back Right
         """
 
         if abs(joy_x) <= self.deadzone:
@@ -54,10 +54,10 @@ class VroomVroom:
         t1 *= 180 / math.pi
 
         angles[0] = -t1
-        angles[1] = t1
+        angles[3] = t1
 
         vels[0] = w * R1
-        vels[1] = w * R1
+        vels[3] = w * R1
 
         t2 = math.atan2(self.b, R + self.a)
         if R < 0:
@@ -70,10 +70,10 @@ class VroomVroom:
         t2 *= 180 / math.pi
 
         angles[2] = t2
-        angles[3] = -t2
+        angles[1] = -t2
 
         vels[2] = w * R2
-        vels[3] = w * R2
+        vels[1] = w * R2
 
         return [angles, vels]
 

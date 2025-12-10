@@ -88,7 +88,7 @@ class UARTBridge(Node):
 
     def send_uart(self):
         fmt = '>2H'  # tells uart payload frame type, 11 H (unsigned 16 bit) + 1 B (unsigned 8 bit)
-        print(self.motor_values)
+        print(f"Sending: {self.motor_values}")
         payload = struct.pack(fmt, *self.motor_values)
         print(len(payload), payload)
         self.serial.write(payload)

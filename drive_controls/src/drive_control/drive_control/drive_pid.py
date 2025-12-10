@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 
 class PositionController:
-    def __init__(self, publisher=None, cap=255, minimum=50, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
+    def __init__(self, publisher=None, cap=255, minimum=50, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01, dead_zone = 1.0):
         """
         :param publisher: Publisher function
         :param cap: The cap to the output
@@ -12,6 +12,7 @@ class PositionController:
         :param Kd: D parameter of PID
         :param I_time: Time parameter for integral
         :param D_time: Time parameter for derivative
+        :param dead_zone: acceptable error
         """
         self.publisher = publisher
         self.cap = cap
@@ -21,6 +22,7 @@ class PositionController:
         self.Kd = Kd
         self.I_time = I_time
         self.D_time = D_time
+        self.dead_zone = dead_zone
 
         self.desired_position = 0
         self.real_position = 0
@@ -45,6 +47,10 @@ class PositionController:
 
     def update_error(self):
         error = self.desired_position - self.real_position
+        if error > 180.0:
+            error = (360.0 - error)
+        elif error < -180.0:
+            error = 360 + error
         self.error_history.append((time.perf_counter(), error))
         if len(self.error_history) > 1_000_000:
             self.error_history = self.error_history[-10_000:]
@@ -71,7 +77,7 @@ class PositionController:
                 break
         D_term = (self.error_history[-1][1] - other_e) / (time.perf_counter() - other_t)
 
-        return self.Kp * P_term + self.Ki * I_term + self.Kd * D_term
+        return (self.Kp * P_term + self.Ki * I_term + self.Kd * D_term) if abs(P_term) > self.dead_zone else 0
 
     def set_output(self, pid_val: float):
         self.current_output = pid_val
@@ -108,7 +114,7 @@ if __name__ == "__main__":
 
 class VelocityController:
     def __init__(self, publisher=None, cap=255, v_time=0.1, Kp=5.0, Ki=0, Kd=0, I_time=0.5, D_time=0.01,
-                 acc_coef=1.0):
+                 acc_coef=1.0, min_pwm = 10):
         """
         :param publisher: Publisher function
         :param cap: The cap to the output
@@ -119,6 +125,7 @@ class VelocityController:
         :param I_time: Time parameter for integral
         :param D_time: Time parameter for derivative
         :param acc_coef: Scaling coefficient for acceleration (equivalent to scaling PID parameters by same amount)
+        :param dead_zone: acceptable error
         """
         self.publisher = publisher
         self.cap = cap
@@ -129,6 +136,7 @@ class VelocityController:
         self.I_time = I_time
         self.D_time = D_time
         self.acc_coef = acc_coef
+        self.min_pwm = min_pwm
 
         self.desired_velocity = 0
         self.real_velocity = 0
@@ -184,6 +192,7 @@ class VelocityController:
 
     def set_output(self, pid_val: float):
         self.current_output += self.acc_coef * pid_val * (time.perf_counter() - self.error_history[-2][0])
+        self.current_output = self.current_output if abs(self.current_output) > self.min_pwm else 0
 
         if self.current_output > self.cap:
             self.current_output = self.cap

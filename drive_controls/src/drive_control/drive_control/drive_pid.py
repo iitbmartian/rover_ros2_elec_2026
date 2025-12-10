@@ -3,7 +3,6 @@ from typing import List, Tuple
 
 
 class BaseController:
-
     def __init__(self, publisher=None, cap=255, minimum=50, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
         """
         :param publisher: Publisher function

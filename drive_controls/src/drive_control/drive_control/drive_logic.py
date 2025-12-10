@@ -44,6 +44,8 @@ class DriveController(Node):
         self.vpids = [self.FR_vpid, self.BR_vpid, self.BL_vpid, self.FL_vpid]
         self.mag_offsets = [self.FR_mag_offset, self.BR_mag_offset, self.BL_mag_offset, self.FL_mag_offset]
 
+        self.motor_order_mapping = [0, 3, 2, 1]
+
         self.velocities = [0] * 4
         global actual_vel_history, target_vel_history
 
@@ -123,8 +125,9 @@ class DriveController(Node):
         drive_data = DriveData()
         full_arr = []
         for i in range(1):
-            full_arr.append(self.vpids[i].current_output)
-            full_arr.append(self.ppids[i].current_output)
+            motor_idx = self.motor_order_mapping[i]
+            full_arr.append(self.vpids[motor_idx].current_output)
+            full_arr.append(self.ppids[motor_idx].current_output)
 
         print(full_arr)
 

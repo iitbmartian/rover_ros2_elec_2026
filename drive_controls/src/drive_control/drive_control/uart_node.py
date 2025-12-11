@@ -8,7 +8,7 @@ import serial
 import struct
 import numpy as np
 
-NUM_ENCODERS = 1
+NUM_ENCODERS = 4
 NUM_QUAD = 5 + 1  # 5 from timer, 1 through GPIO
 NUM_ACS = 9
 
@@ -42,7 +42,7 @@ class UARTBridge(Node):
         # Telemetry Publisher
         self.telemetry_publisher = self.create_publisher(TelemetryData, '/telemetry', 10)
 
-        self.motor_values = [0] * 2
+        self.motor_values = [0] * 8
         # self.wrist_command = 4  # do nothing
         self.serial.reset_input_buffer()
 
@@ -87,10 +87,9 @@ class UARTBridge(Node):
     #         self.wrist_command = 3
 
     def send_uart(self):
-        fmt = '>2H'  # tells uart payload frame type, 11 H (unsigned 16 bit) + 1 B (unsigned 8 bit)
+        fmt = '>8H'  # tells uart payload frame type, 11 H (unsigned 16 bit) + 1 B (unsigned 8 bit)
         print(f"Sending: {self.motor_values}")
         payload = struct.pack(fmt, *self.motor_values)
-        print(len(payload), payload)
         self.serial.write(payload)
 
     def read_uart(self):

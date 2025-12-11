@@ -112,7 +112,7 @@ class DriveController(Node):
         enc_data = telemetry_data.angles
         vel_data = telemetry_data.speed
         actual_vel_history.append((self.get_clock().now(), vel_data[0]))
-        for i in range(1):
+        for i in range(4):
             magnetic_angle = self.format_magnetic_angle(enc_data[i], i)
             self.ppids[i].add_position_feedback(magnetic_angle)
             self.vpids[i].add_velocity_feedback(vel_data[i])
@@ -122,7 +122,7 @@ class DriveController(Node):
     def send(self):
         drive_data = DriveData()
         full_arr = []
-        for i in range(1):
+        for i in range(4):
             full_arr.append(self.vpids[i].current_output)
             full_arr.append(self.ppids[i].current_output)
 
@@ -153,7 +153,7 @@ def main(args=None):
     finally:
         plt.plot(actual_vel_history)
         plt.plot(target_vel_history)
-        plt.show()
+        # plt.show()
         drive_control.destroy_node()
         rclpy.shutdown()
 

@@ -25,20 +25,20 @@ class DriveController(Node):
         self.vroomer = explicit_logic.VroomVroom()
 
         # creating 4 instances for each wheel
-        self.FR_ppid = drive_pid.PositionController()
-        self.FL_ppid = drive_pid.PositionController()
-        self.BL_ppid = drive_pid.PositionController()
-        self.BR_ppid = drive_pid.PositionController()
+        self.FR_ppid = drive_pid.PositionController(Kp=10)
+        self.FL_ppid = drive_pid.PositionController(Kp=10)
+        self.BL_ppid = drive_pid.PositionController(Kp=10)
+        self.BR_ppid = drive_pid.PositionController(Kp=10)
 
         self.FR_vpid = drive_pid.VelocityController()
         self.FL_vpid = drive_pid.VelocityController()
         self.BL_vpid = drive_pid.VelocityController()
         self.BR_vpid = drive_pid.VelocityController()
 
-        self.FR_mag_offset = 0
-        self.FL_mag_offset = 236
-        self.BL_mag_offset = 187
-        self.BR_mag_offset = 108
+        self.FR_mag_offset = 355.0
+        self.FL_mag_offset = 238.35
+        self.BL_mag_offset = 183.33
+        self.BR_mag_offset = 104.32
 
         self.ppids = [self.FR_ppid, self.FL_ppid, self.BL_ppid, self.BR_ppid]
         self.vpids = [self.FR_vpid, self.FL_vpid, self.BL_vpid, self.BR_vpid]

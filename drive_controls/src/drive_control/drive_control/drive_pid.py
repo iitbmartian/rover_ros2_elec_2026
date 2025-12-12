@@ -84,7 +84,7 @@ class BaseController:
 
 
 class PositionController(BaseController):
-    def __init__(self, publisher=None, cap=150, minimum=80, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
+    def __init__(self, publisher=None, cap=255, minimum=80, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
         """
         :param publisher: Publisher function
         :param cap: The cap to the output

@@ -34,7 +34,7 @@ class UARTBridge(Node):
         # self.create_subscription(WristData, '/wrist_commands', self.wrist_callback, 10)
 
         # Timer: to send UART frame -> 100 hz for 0.01 callback
-        self.send_timer = self.create_timer(0.01, self.send_uart)
+        self.send_timer = self.create_timer(0.1, self.send_uart)
 
         # Timer: read incoming UART frame
         self.read_timer = self.create_timer(0.1, self.read_uart)

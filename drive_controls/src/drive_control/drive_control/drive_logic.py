@@ -36,13 +36,19 @@ class DriveController(Node):
         self.BR_vpid = drive_pid.VelocityController()
 
         self.FR_mag_offset = 0
-        self.FL_mag_offset = 0
-        self.BL_mag_offset = 0
-        self.BR_mag_offset = 0
+        self.FL_mag_offset = 236
+        self.BL_mag_offset = 187
+        self.BR_mag_offset = 108
 
         self.ppids = [self.FR_ppid, self.FL_ppid, self.BL_ppid, self.BR_ppid]
         self.vpids = [self.FR_vpid, self.FL_vpid, self.BL_vpid, self.BR_vpid]
         self.mag_offsets = [self.FR_mag_offset, self.FL_mag_offset, self.BL_mag_offset, self.BR_mag_offset]
+
+        self.steer_input_direction_flip = [False, False, False, False]
+        self.vroom_input_direction_flip = [False, False, True, False]
+
+        self.steer_output_direction_flip = [True, False, True, False]
+        self.vroom_output_direction_flip = [True, True, True, True]
 
         self.velocities = [0] * 4
         global actual_vel_history, target_vel_history
@@ -90,10 +96,11 @@ class DriveController(Node):
             self.ppids[i].set_position(explicit_values[0][i])
             self.vpids[i].set_velocity(explicit_values[1][i])
 
-        print(f"desired angle: {explicit_values[0][0] + self.FR_mag_offset}")
-        print(f"desired velocity: {explicit_values[1][0]}")
+            print(f"desired angle {i}: {explicit_values[0][i]}")
+            print(f"desired velocity {i}: {explicit_values[1][i]}")
 
-        # self.velocities = explicit_values[1]
+        # TODO put feedback
+        self.velocities = explicit_values[1]
 
         self.send()
 
@@ -114,6 +121,16 @@ class DriveController(Node):
         actual_vel_history.append((self.get_clock().now(), vel_data[0]))
         for i in range(4):
             magnetic_angle = self.format_magnetic_angle(enc_data[i], i)
+
+            if self.steer_input_direction_flip[i]:
+                magnetic_angle = -magnetic_angle
+
+            if self.vroom_input_direction_flip[i]:
+                vel_data[i] = -vel_data[i]
+
+            print(f"formatted angle {i}: {magnetic_angle}")
+            print(f"actual vel {i}: {vel_data[i]}")
+
             self.ppids[i].add_position_feedback(magnetic_angle)
             self.vpids[i].add_velocity_feedback(vel_data[i])
 
@@ -123,8 +140,19 @@ class DriveController(Node):
         drive_data = DriveData()
         full_arr = []
         for i in range(4):
-            full_arr.append(self.vpids[i].current_output)
-            full_arr.append(self.ppids[i].current_output)
+            # TODO put feedback
+            # v_output = self.vpids[i].current_output
+            v_output = self.velocities[i]
+            p_output = self.ppids[i].current_output
+
+            if self.vroom_output_direction_flip[i]:
+                v_output = -v_output
+
+            if self.steer_output_direction_flip[i]:
+                p_output = -p_output
+
+            full_arr.append(v_output)
+            full_arr.append(p_output)
 
         print(full_arr)
 

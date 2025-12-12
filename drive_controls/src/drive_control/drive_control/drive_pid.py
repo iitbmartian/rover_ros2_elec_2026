@@ -84,7 +84,7 @@ class BaseController:
 
 
 class PositionController(BaseController):
-    def __init__(self, publisher=None, cap=255, minimum=50, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
+    def __init__(self, publisher=None, cap=150, minimum=80, Kp=20, Ki=0, Kd=0, I_time=0.5, D_time=0.01):
         """
         :param publisher: Publisher function
         :param cap: The cap to the output
@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
 class VelocityController(BaseController):
     def __init__(self, publisher=None, cap=255, minimum=50, v_time=0.1, Kp=5.0, Ki=0, Kd=0, I_time=0.5, D_time=0.01,
-                 acc_coef=1.0):
+                 acc_coef=2.0):
         """
         :param publisher: Publisher function
         :param cap: The cap to the output
@@ -156,6 +156,7 @@ class VelocityController(BaseController):
             self.error_history = self.error_history[-10_000:]
 
     def set_output(self, pid_val: float):
+        print(pid_val)
         self.current_output += self.acc_coef * pid_val * (time.perf_counter() - self.error_history[-2][0])
 
     def set_velocity(self, v: float):

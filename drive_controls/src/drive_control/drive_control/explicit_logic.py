@@ -3,7 +3,7 @@ from typing import List
 
 
 class VroomVroom:
-    def __init__(self, half_width=0.3, half_length=0.5, speed_scalar=200, r_scalar=1, deadzone=0.1):
+    def __init__(self, half_width=0.35, half_length=0.45, speed_scalar=250, r_scalar=1, deadzone=0.1):
         #approx 95
         self.a = half_width
         self.b = half_length

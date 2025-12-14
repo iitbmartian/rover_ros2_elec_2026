@@ -25,10 +25,10 @@ class DriveController(Node):
         self.vroomer = explicit_logic.VroomVroom()
 
         # creating 4 instances for each wheel
-        self.FR_ppid = drive_pid.PositionController(Kp=10)
+        self.FR_ppid = drive_pid.PositionController(Kp=7)
         self.FL_ppid = drive_pid.PositionController(Kp=10)
-        self.BL_ppid = drive_pid.PositionController(Kp=10)
-        self.BR_ppid = drive_pid.PositionController(Kp=10)
+        self.BL_ppid = drive_pid.PositionController(Kp=9)
+        self.BR_ppid = drive_pid.PositionController(Kp=8)
 
         self.FR_vpid = drive_pid.VelocityController()
         self.FL_vpid = drive_pid.VelocityController()
@@ -83,7 +83,9 @@ class DriveController(Node):
     def joystick_callback(self, joy_val):
         # Extract Joystick values
         left_hor = -joy_val.axes[0]
-        left_ver = joy_val.axes[1]
+        L2_val = (1 - joy_val.axes[2]) / 2
+        R2_val = (1 - joy_val.axes[5]) / 2
+        left_ver = R2_val - L2_val
 
 
         # Return: Returns 2 lists of angles and velocities respectively. The order of motors is in: Front Right, Back Right, Back Left, Front Left

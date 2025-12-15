@@ -178,6 +178,10 @@ def main(args=None):
         rclpy.spin(drive_control)
     except KeyboardInterrupt:
         print("Shutting down due to KeyboardInterrupt")
+        drive_data = DriveData()
+        drive_data.pwm   = [0] * 8
+        drive_data.direction = [0] * 8
+        drive_control.drive_publisher.publish(drive_data)
     # except Exception as e:
         # print(f"Exception {e}")
     finally:

@@ -3,7 +3,7 @@ from typing import List
 
 
 class VroomVroom:
-    def __init__(self, half_width=0.35, half_length=0.45, speed_scalar=250, r_scalar=1, deadzone=0.1):
+    def __init__(self, half_width=0.35, half_length=0.45, speed_scalar=250, r_scalar=1, deadzone=0.0):
         #approx 95
         self.a = half_width
         self.b = half_length
@@ -38,11 +38,6 @@ class VroomVroom:
 
         R = self.r_scalar / rinv
 
-        if abs(joy_y) <= self.deadzone:
-            w = 0
-        else:
-            w = self.speed_scalar * (joy_y / (1 + abs(R))) * (1 if R > 0 else -1)
-
         t1 = math.atan2(self.b, R - self.a)
         if R < 0:
             t1 -= math.pi
@@ -56,8 +51,8 @@ class VroomVroom:
         angles[0] = -t1
         angles[3] = t1
 
-        vels[0] = w * R1
-        vels[3] = w * R1
+        vels[0] = R1
+        vels[3] = R1
 
         t2 = math.atan2(self.b, R + self.a)
         if R < 0:
@@ -72,8 +67,12 @@ class VroomVroom:
         angles[2] = t2
         angles[1] = -t2
 
-        vels[2] = w * R2
-        vels[1] = w * R2
+        vels[2] = R2
+        vels[1] = R2
+
+        max_vel = max(vels)
+        for i in range(len(vels)):
+            vels[i] *= self.speed_scalar * joy_y / max_vel
 
         return [angles, vels]
 

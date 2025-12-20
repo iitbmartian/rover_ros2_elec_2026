@@ -1,5 +1,5 @@
 import rclpy
-from rclpy.action import ActionServer, GoalResponse
+from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.action.server import ServerGoalHandle
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.node import Node
@@ -13,12 +13,12 @@ import numpy as np
 from numpy.typing import NDArray
 from typing import List, Tuple
 
-from pos_control_interfaces.action import Trajectory
-from msg_interfaces.msg import EncoderArm, ArmEndMotion
+from all_interfaces.action import Trajectory
+from all_interfaces.msg import EncoderArm, ArmEndMotion
 from geometry_msgs.msg import Point
 
-from arm_pos_control.calculator import IKHandler
-from arm_pos_control.min_jerk import min_jerk
+from arm_pos_control.helpers.calculator import IKHandler
+from arm_pos_control.helpers.min_jerk import min_jerk
 
 MAX_QUEUE_SIZE = 10
 SAMPLE_FREQ = 100  # Hz
@@ -33,7 +33,7 @@ class TrajectoryActionServer(Node):
         self.pwm_publisher = self.create_publisher(
             ArmEndMotion, 'arm_commands', MAX_QUEUE_SIZE)
         self.receive_encoder = self.create_subscription(
-            EncoderArm, '/encoder_arm', self.encoderCallback, MAX_QUEUE_SIZE)
+            EncoderArm, 'encoder_arm', self.encoderCallback, MAX_QUEUE_SIZE)
 
         self.action_server = ActionServer(
             self,
@@ -41,6 +41,7 @@ class TrajectoryActionServer(Node):
             'pid_controller_actions',
             self.actionCallback,
             goal_callback=self.goalCallback,
+            cancel_callback=self.cancelCallback,
             callback_group=ReentrantCallbackGroup()
         )
 
@@ -80,6 +81,16 @@ class TrajectoryActionServer(Node):
 
         t = np.full(dur-1, total_time/(dur-1), dtype=np.float64)
         return traj[1:], t
+    
+    def cancelCallback(self, cancel_request):
+        """Handle cancellation requests from clients."""
+        self.get_logger().info('Received cancel request')
+        return CancelResponse.ACCEPT
+    
+    def inLimits(self):
+        if (self.q[1] > 0.64 * math.pi or self.q[1] < 0.25 * math.pi or self.q[2] < 0.25 * math.pi):
+            return False
+        return True
 
     def encoderCallback(self, msg: EncoderArm):
         # min - 10698, home - 65536, max - 117678
@@ -100,8 +111,7 @@ class TrajectoryActionServer(Node):
         end_eff_x, end_eff_y = self.ik_handler.K(self.q[1], self.q[2])
         self.end_eff_pos = np.array([end_eff_x, end_eff_y], dtype=np.float64)
 
-        if self.q[1] > 0.75 * math.pi or self.q[1] < 0.25 * math.pi or self.q[2] < 0.25 * math.pi:
-            self.stop = True
+        self.stop = (not self.inLimits())
 
     def goalCallback(self, goal_request: Trajectory.Goal) -> GoalResponse:
         inp = goal_request.command.data
@@ -131,6 +141,7 @@ class TrajectoryActionServer(Node):
         self.get_logger().info(f'Executing goal {inp}')
 
         result = Trajectory.Result()
+
         pwm_msg = ArmEndMotion()
         pwm_msg.direction = [0, 0, 0, 0, 0, 0]
         pwm_msg.speed = [0, 0, 0, 0, 0, 0]
@@ -163,6 +174,13 @@ class TrajectoryActionServer(Node):
             self.pwm_publisher.publish(pwm_msg)
             result.success = False
             return result
+        
+        if goal_handle.is_cancel_requested:
+            goal_handle.canceled()
+            pwm_msg.sys_check = True
+            self.pwm_publisher.publish(pwm_msg)
+            result.success = False
+            return result
 
         goal_handle.succeed()
         result.success = True
@@ -189,6 +207,10 @@ class TrajectoryActionServer(Node):
                 self.get_logger().warn('Going out of bounds, aborting goal')
                 goal_handle.abort()
                 return
+            
+            if goal_handle.is_cancel_requested:
+                self.get_logger().info('Cancel requested during trajectory execution')
+                return
 
             desired_qs, desired_qe = self.ik_handler.IK(*point)
             print(f'Current Angle Values: {self.q[1], self.q[2]}')
@@ -213,9 +235,9 @@ class TrajectoryActionServer(Node):
 
             self.wait(float(delay))
 
-#        self.loopLastPoint(goal_handle)
+        self.loopLastPoint(goal_handle)
 
-#    def loopLastPoint(self, goal_handle: ServerGoalHandle):
+    def loopLastPoint(self, goal_handle: ServerGoalHandle):
         self.get_logger().info("Looping last point.")
 
         last_point = self.traj_pos[-1]
@@ -246,6 +268,10 @@ class TrajectoryActionServer(Node):
                 goal_handle.abort()
                 return
 
+            if goal_handle.is_cancel_requested:
+                self.get_logger().info('Cancel requested during trajectory execution')
+                return
+
             pwm_msg.speed = [pwm_s, pwm_e, 0, 0, 0, 0]
             pwm_msg.direction = [dir_s, dir_e, 0, 0, 0, 0]
 
@@ -266,8 +292,8 @@ class TrajectoryActionServer(Node):
             pwm_e = pwm_e_new
         
         for _ in range(10):
-            pwm_msg.direction = [0,0, 0, 0, 0, 0]
-            pwm_msg.speed = [0,0, 0, 0, 0, 0]
+            pwm_msg.direction = [0, 0, 0, 0, 0, 0]
+            pwm_msg.speed = [0, 0, 0, 0, 0, 0]
             pwm_msg.sys_check = False
             pwm_msg.reset = False
             self.pwm_publisher.publish(pwm_msg)

@@ -2,7 +2,7 @@
 float64[] current 
 
 #Angle of explicit
-float64[] angle 
+float64[] angles
 
 #Position of drive
 int64[] position
@@ -11,5 +11,4 @@ int64[] position
 int32[] speed 
 
 #Acceleration
-int32[] acceleration 
-
+int32[] acceleration

@@ -1,6 +1,8 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
-package_name = 'linear_base_control'
+package_name = 'arm_can'
 
 setup(
     name=package_name,
@@ -10,12 +12,16 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'scripts'), 
+            glob('scripts/*.sh')),
+        (os.path.join('share',package_name,'launch'),
+            glob('launch/*.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='shridhar',
-    maintainer_email='Shridhar.g.patil1@gmail.com',
-    description='TODO: Package description',
+    maintainer='omega',
+    maintainer_email='harshitsomani09@gmail.com',
+    description='CAN Initialization for Arm Nodes',
     license='TODO: License declaration',
     extras_require={
         'test': [
@@ -24,7 +30,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'linear_base_start = linear_base_control.linear_base_logic:main'
+            'arm_can = arm_can.ArmCAN:main'
         ],
     },
 )

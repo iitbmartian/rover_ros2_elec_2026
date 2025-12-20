@@ -2,7 +2,7 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 from std_msgs.msg import String
-from pos_control_interfaces.action import Trajectory
+from all_interfaces.action import Trajectory
 from action_msgs.msg import GoalStatus
 from threading import Lock, Condition, Thread, Event
 import time
@@ -205,7 +205,7 @@ class ActionQueueClient(Node):
 
     def destroy_node(self):
         """Override destroy_node to implement graceful shutdown."""
-        self.get_logger().info('Initiating graceful shutdown')
+        self.get_logger().info('Initiating shutdown')
         
         # Cancel any pending goal
         with self.pending_goal_lock:

@@ -12,7 +12,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/drive_control/launch', ['launch/drive_launch.py']),
+        ('share/drive_controls/launch', ['launch/drive_launch.py']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -27,7 +27,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'drive_start = drive_control.drive_logic:main'
+            'drive_start = drive_control.drive_logic:main',
         ],
     },
 )

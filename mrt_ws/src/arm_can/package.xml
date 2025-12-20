@@ -1,19 +1,16 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>linear_base_control</name>
+  <name>arm_can</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="Shridhar.g.patil1@gmail.com">shridhar</maintainer>
+  <description>CAN Initialization for Arm Nodes</description>
+  <maintainer email="harshitsomani09@gmail.com">omega</maintainer>
   <license>TODO: License declaration</license>
 
   <exec_depend>rclpy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>all_interfaces</exec_depend>
-  <exec_depend>python3-numpy</exec_depend>
-  <exec_depend>python3-typing-extensions</exec_depend>
-  <exec_depend>msg_interfaces</exec_depend>
+  <exec_depend>python-can</exec_depend>
+  <exec_depend>ros2launch</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

@@ -27,6 +27,7 @@ setup(
             'handler = arm_pos_control.input_handler:main',
             'queue = arm_pos_control.input_queue:main',
             'pid_controller = arm_pos_control.pid_controller:main',
+            'manual_control = arm_pos_control.full_command:main'
         ],
     },
 )

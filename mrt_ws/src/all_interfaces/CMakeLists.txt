@@ -21,9 +21,10 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/DriveData.msg"
-  "msg/LinearBaseData.msg"
   "msg/WristData.msg"
   "msg/TelemetryData.msg"
+  "msg/ArmEndMotion.msg"
+  "msg/EncoderArm.msg"
   "action/Trajectory.action"
   DEPENDENCIES std_msgs geometry_msgs
 )
